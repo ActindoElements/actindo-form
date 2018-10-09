@@ -210,7 +210,7 @@ attach it to the `<actindo-form>`:
                         </div>
                         [[loadErrorMessage]]
                         <div class="buttonWrapper">
-                            <paper-button on-click="_closeSubmitError" raised>
+                            <paper-button on-click="_retryLoad" raised>
                                 <iron-icon icon="close"></iron-icon>
                                 Retry
                             </paper-button>
@@ -258,7 +258,7 @@ attach it to the `<actindo-form>`:
                 /**
                  * Parameters used when loading
                  */
-                loadingParams: {
+                loadParams: {
                     type: Object,
                     value: function () {
                         return {}
@@ -910,9 +910,9 @@ attach it to the `<actindo-form>`:
                 this.request.headers = this.headers;
 
 
-                this.lastParams = Object.assign(this.loadingParams, json === undefined || json === null ? {} : json,);
+                this.lastParams = Object.assign(this.loadParams, json === undefined || json === null ? {} : json,);
 
-                if (json || this.loadingParams) {
+                if (json || this.loadParams) {
                     if (this.request.method.toUpperCase() === 'POST') {
                         this.request.body = this.lastParams;
                     }
