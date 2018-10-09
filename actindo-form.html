@@ -832,6 +832,10 @@ attach it to the `<actindo-form>`:
                 } else {
                     if (element['_hasIronCheckedElementBehavior'] && !element.checked)
                         return [];
+                    if( element.value === null )
+                    {
+                        return [''];
+                    }
                     return [element.value];
                 }
             },
