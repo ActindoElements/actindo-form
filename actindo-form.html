@@ -821,6 +821,7 @@ attach it to the `<actindo-form>`:
                                 let currentElement = assignedElements[j];
                                 if ((ignoreDisabled || !currentElement.disabled) && (ignoreName || currentElement.name) && currentElement.tagName !== 'SLOT')
                                 {
+                                    
                                     submittable.push( currentElement )
                                 }
                                 else
@@ -998,9 +999,7 @@ attach it to the `<actindo-form>`:
                             }
                         }
                     }
-                    else {
-                        data[pfx] = r;
-                    }
+                    data[pfx] = r;
                 };
 
                 if (resp === null || typeof(resp) !== 'object') {
@@ -1019,35 +1018,32 @@ attach it to the `<actindo-form>`:
                 this.formData = resp;
 
                 recurse(resp, '');
+                var nodes = this._getLoadableElements();
+                for (var i = 0, c = nodes.length; i < c; i++) {
+                    var node = nodes[i];
 
-                for (var fieldName in data) {
-                    var nodes = this._getLoadableElements();
-                    for (var i = 0, c = nodes.length; i < c; i++) {
-                        var node = nodes[i],
-                            value = data[fieldName];
+                    if (!node.name || !data[node.name]) {
+                        continue;
+                    }
 
-                        if (!node.name || node.name !== fieldName) {
-                            continue;
-                        }
+                    value = data[node.name];
+                    // handle selects
+                    if (node.tagName.toLowerCase() === 'select') {
+                        var values = Array.isArray(value) ? value : [value];
 
-                        // handle selects
-                        if (node.tagName.toLowerCase() === 'select') {
-                            var values = Array.isArray(value) ? value : [value];
-
-                            for (var o = 0; o < node.options.length; o++) {
-                                for (var j = 0; j < values.length; j++) {
-                                    if (node.options[o].value === values[j]) {
-                                        node.options[o].selected = true;
-                                        break;
-                                    }
+                        for (var o = 0; o < node.options.length; o++) {
+                            for (var j = 0; j < values.length; j++) {
+                                if (node.options[o].value === values[j]) {
+                                    node.options[o].selected = true;
+                                    break;
                                 }
-                                node.options[o].selected = false;
                             }
+                            node.options[o].selected = false;
                         }
-                        // default: set value on element
-                        else {
-                            node.value = value;
-                        }
+                    }
+                    // default: set value on element
+                    else {
+                        node.value = value;
                     }
                 }
             }
