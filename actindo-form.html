@@ -821,6 +821,7 @@ attach it to the `<actindo-form>`:
                                 let currentElement = assignedElements[j];
                                 if ((ignoreDisabled || !currentElement.disabled) && (ignoreName || currentElement.name) && currentElement.tagName !== 'SLOT')
                                 {
+                                    
                                     submittable.push( currentElement )
                                 }
                                 else
@@ -986,23 +987,42 @@ attach it to the `<actindo-form>`:
             },
 
             _fillForm: function (resp) {
-                var data = {};
-                var recurse = function (r, pfx) {
-                    if (typeof r === 'object') {
-                        for (var i in r) {
+                var recurse = function (value, pfx, lstNodes) {
+                    const matchedNodes = lstNodes.filter(node => node.name === pfx);
+                    if (matchedNodes.length)
+                    {
+                        matchedNodes.forEach(node => {
+                            // handle selects
+                            if (node.tagName.toLowerCase() === 'select') {
+                                var values = Array.isArray(value) ? value : [value];
+
+                                for (var o = 0; o < node.options.length; o++) {
+                                    for (var j = 0; j < values.length; j++) {
+                                        if (node.options[o].value === values[j]) {
+                                            node.options[o].selected = true;
+                                            break;
+                                        }
+                                    }
+                                    node.options[o].selected = false;
+                                }
+                            }
+                            // default: set value on element
+                            else {
+                                node.value = value;
+                            }
+                        })
+                    }
+                    else if (typeof value === 'object') {
+                        for (var i in value) {
                             if (!pfx.length) {
-                                recurse(r[i], i);
+                                recurse(value[i], i, lstNodes);
                             }
                             else {
-                                recurse(r[i], pfx + '[' + i + ']');
+                                recurse(value[i], pfx + '[' + i + ']', lstNodes);
                             }
                         }
                     }
-                    else {
-                        data[pfx] = r;
-                    }
                 };
-
                 if (resp === null || typeof(resp) !== 'object') {
                     throw new Error('resp is not an object');
                 }
@@ -1017,39 +1037,18 @@ attach it to the `<actindo-form>`:
                 }
 
                 this.formData = resp;
+                
+                const lstNodes = [];
+                var nodes = this._getLoadableElements();
+                for (var i = 0, c = nodes.length; i < c; i++) {
+                    var node = nodes[i];
 
-                recurse(resp, '');
-
-                for (var fieldName in data) {
-                    var nodes = this._getLoadableElements();
-                    for (var i = 0, c = nodes.length; i < c; i++) {
-                        var node = nodes[i],
-                            value = data[fieldName];
-
-                        if (!node.name || node.name !== fieldName) {
-                            continue;
-                        }
-
-                        // handle selects
-                        if (node.tagName.toLowerCase() === 'select') {
-                            var values = Array.isArray(value) ? value : [value];
-
-                            for (var o = 0; o < node.options.length; o++) {
-                                for (var j = 0; j < values.length; j++) {
-                                    if (node.options[o].value === values[j]) {
-                                        node.options[o].selected = true;
-                                        break;
-                                    }
-                                }
-                                node.options[o].selected = false;
-                            }
-                        }
-                        // default: set value on element
-                        else {
-                            node.value = value;
-                        }
+                    if (!node.name) {
+                        continue;
                     }
+                    lstNodes.push(node);
                 }
+                recurse(resp, '', lstNodes);
             }
         });
     </script>
