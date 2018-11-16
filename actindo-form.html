@@ -529,6 +529,10 @@ attach it to the `<actindo-form>`:
                 }
                 if (typeof object === "object") {
                     if (Array.isArray(object)) {
+                        if (!object.length)
+                        {
+                            flat[currentName] = null;
+                        }
                         for (let i = 0; i < object.length; i++) {
                             let name = currentName;
                             name += "[" + String(i) + "]";
@@ -537,6 +541,10 @@ attach it to the `<actindo-form>`:
                     }
                     else {
                         let keys = Object.keys(object);
+                        if (!keys.length)
+                        {
+                            flat[currentName] = null;
+                        }
                         for (let i = 0; i < keys.length; i++) {
                             let key = keys[i];
                             let name = currentName;
