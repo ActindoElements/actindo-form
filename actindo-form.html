@@ -376,6 +376,13 @@ attach it to the `<actindo-form>`:
                         return {};
                     }
                 },
+                /**
+                 * whether to reset all form element values to null before fill data when the form is loaded
+                 */
+                clearValuesOnLoad: {
+                    type: Boolean,
+                    value: false
+                }
             },
             /**
              * Fired before the form is loaded.
@@ -1053,6 +1060,10 @@ attach it to the `<actindo-form>`:
 
                     if (!node.name) {
                         continue;
+                    }
+                    if (this.clearValuesOnLoad)
+                    {
+                        node.value = null;
                     }
                     lstNodes.push(node);
                 }
