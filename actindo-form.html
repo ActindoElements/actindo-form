@@ -830,10 +830,15 @@ attach it to the `<actindo-form>`:
                         }
                         else if( node.tagName === 'SLOT' ) //Traverse slot to find externally injected content
                         {
-                            let assignedElements = node.assignedElements();
+                            let assignedElements = node.assignedNodes();//cannot use assignedElements here due to older browsers
+                            
                             for( let j=0;j<assignedElements.length;j++ )
                             {
                                 let currentElement = assignedElements[j];
+                                if( currentElement.nodeType !== 1 ) //Only interested in elements
+                                {
+                                    continue;
+                                }
                                 if ((ignoreDisabled || !currentElement.disabled) && (ignoreName || currentElement.name) && currentElement.tagName !== 'SLOT')
                                 {
                                     
