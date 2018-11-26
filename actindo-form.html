@@ -252,7 +252,8 @@ attach it to the `<actindo-form>`:
                  * Determines label during load
                  */
                 loadingLabel: {
-                    type: String
+                    type: String,
+                    value: "Loading data"
                 },
 
                 /**
@@ -333,11 +334,6 @@ attach it to the `<actindo-form>`:
                 loadAction: {
                     type: String,
                     value: ''
-                },
-
-                loadingLabel: {
-                    type: String,
-                    value: "Loading data"
                 },
 
                 /**
@@ -800,6 +796,7 @@ attach it to the `<actindo-form>`:
                 for(let i=0;i<this.modifiedElements.length;i++)
                 {
                     this.modifiedElements[i].__formSearched = false;
+                    this.modifiedElements[i].__formFound = false;
                 }
             },
 
@@ -826,7 +823,12 @@ attach it to the `<actindo-form>`:
                         // 'name' attribute.
                         // should ignore element with tagName equal to SLOT
                         if ((ignoreDisabled || !node.disabled) && (ignoreName || node.name) && node.tagName !== 'SLOT') {
-                            submittable.push(node);
+                            if( node.__formFound !== true )
+                            {
+                                submittable.push(node);
+                            }
+                            node.__formFound = true;
+                            this.modifiedElements.push( node );
                         }
                         else if( node.tagName === 'SLOT' ) //Traverse slot to find externally injected content
                         {
@@ -841,8 +843,12 @@ attach it to the `<actindo-form>`:
                                 }
                                 if ((ignoreDisabled || !currentElement.disabled) && (ignoreName || currentElement.name) && currentElement.tagName !== 'SLOT')
                                 {
-                                    
-                                    submittable.push( currentElement )
+                                    if( currentElement.__formFound !== true )
+                                    {
+                                        submittable.push( currentElement );
+                                    }
+                                    currentElement.__formFound = true;
+                                    this.modifiedElements.push( currentElement );
                                 }
                                 else
                                 {
