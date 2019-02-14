@@ -513,14 +513,25 @@ attach it to the `<actindo-form>`:
                 var valid = this._form.checkValidity();
                 var elements = this._getValidatableElements();
 
+                const invalidNames = [];
+
                 // Go through all the elements, and validate the custom ones.
                 for (var el, i = 0; el = elements[i], i < elements.length; i++) {
                     // This is weird to appease the compiler. We assume the custom element
                     // has a validate() method, otherwise we can't check it.
                     var validatable = /** @type {{validate: (function() : boolean)}} */ (el);
                     if (validatable.validate) {
-                        valid = !!validatable.validate() && valid;
+                        let currentValid = true;
+                        valid = (currentValid = !!validatable.validate()) && valid;
+                        if( !currentValid )
+                        {
+                            invalidNames.push( validatable.name );
                     }
+                    }
+                }
+                if( !valid )
+                {
+                    this.dispatchEvent( new CustomEvent( "invalid", {detail: invalidNames} ) );
                 }
                 return valid;
             },
@@ -852,7 +863,11 @@ attach it to the `<actindo-form>`:
                                 }
                                 else
                                 {
+                                    if (currentElement.root) {
+                                        Array.prototype.push.apply(submittable, this._findElements(currentElement.root, ignoreName, ignoreDisabled));
+                                    } else {
                                     Array.prototype.push.apply(submittable, this._findElements(currentElement, ignoreName, ignoreDisabled));
+                                    }
                                 }
                             }
                         }
