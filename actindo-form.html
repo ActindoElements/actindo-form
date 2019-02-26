@@ -601,7 +601,7 @@ attach it to the `<actindo-form>`:
                 // Remove any existing children in the submission form (from a previous submit).
                 this.$.helper.textContent = '';
 
-                var json = this.serializeForm();
+                var json = this.serializeForm( true, true );
 
                 let flat = {};
                 let keys = Object.keys(json);
@@ -660,14 +660,26 @@ attach it to the `<actindo-form>`:
              * Serializes the form as will be used in submission. Note that `serialize`
              * is a Polymer reserved keyword, so calling `someIronForm`.serialize()`
              * will give you unexpected results.
+             * @param {Boolean} clearInvalid if true all invalid submittable fields are set to valid
+             * @param {Boolean} noRefresh if true we do not search again for form fields but take the ones from last enumeration
              * @return {Object} An object containing name-value pairs for elements that
              *                  would be submitted.
              */
-            serializeForm: function () {
+            serializeForm: function ( clearInvalid, noRefresh ) {
                 // Only elements that have a `name` and are not disabled are submittable.
-                var elements = this._getSubmittableElements();
+                var elements = this._getSubmittableElements(noRefresh);
                 var json = {};
                 for (var i = 0; i < elements.length; i++) {
+                    if( clearInvalid ) //This has to be done because some cases are not handled via the validate function
+                        //This happens when the validation error originates from backend validation
+                        //It can happen that some fields do not have a validation function but still can be invalid
+                    {
+                        if( elements[i].invalid )
+                        {
+                            console.warn( "field with name "+elements[i].name+" has not cleared its invalid state through validate function; auto-clearing" );
+                            elements[i].invalid = false;
+                        }
+                    }
                     var values = this._serializeElementValues(elements[i]);
                     for (var v = 0; v < values.length; v++) {
                         this._addSerializedElement(json, elements[i].name, values[v]);
@@ -791,11 +803,16 @@ attach it to the `<actindo-form>`:
             },
 
             _getValidatableElements: function () {
-                return this._findElements(this._form, true, false);
+                return this._getSubmittableElements();
             },
 
-            _getSubmittableElements: function () {
-                return this._findElements(this._form, false, false);
+            _getSubmittableElements: function (noRefresh) {
+                if( noRefresh && this._lastSubmittableElements )
+                {
+                    return this._lastSubmittableElements;
+                }
+                this._lastSubmittableElements = this._findElements(this._form, false, false);
+                return this._lastSubmittableElements;
             },
 
             _getLoadableElements: function () {
