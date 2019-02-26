@@ -100,7 +100,7 @@ attach it to the `<actindo-form>`:
             div.overlay {
                 @apply(--font-subheader);
                 background-color: white;
-                z-index: 1;
+                z-index: 10;
                 position: absolute;
                 top: 0;
                 bottom: 0;
@@ -337,6 +337,25 @@ attach it to the `<actindo-form>`:
                 },
 
                 /**
+                 * If set to true the form data is not filled immediately after successful load but when requested with function formCanBeFilled()
+                 * if formCanBeFilled is called before data is loaded, form is filled immediately after load
+                 * formCanBeFilled has to be called after each load request
+                 */
+                deferredFill: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Internal variable; determines if form can be filled
+                 * On changed deferred fill is done if data already loaded
+                 */
+                _canFill: {
+                    type: Boolean,
+                    observer: "_canFillFormChanged"
+                },
+
+                /**
                  * true if load is active
                  */
                 inLoad: {
@@ -482,6 +501,20 @@ attach it to the `<actindo-form>`:
                     window.setTimeout(() => {
                         this.load()
                     }, 0);
+                }
+            },
+
+            formCanBeFilled: function()
+            {
+                this._canFill = true;
+            },
+
+            _canFillFormChanged: function( newValue, oldValue ) {
+                //We have a real change from false->true and not from undefined -> true like on first use of loads and we have loaded data there
+                //If we have not loaded data we do not have to do anything as it will fill form automatically
+                if( oldValue === false && newValue === true && this._respCache )
+                {
+                    this._fillForm(this._respCache);
                 }
             },
 
@@ -986,10 +1019,11 @@ attach it to the `<actindo-form>`:
                     this.loadOnInit = true;
                     return;
                 }
-
+                
                 if (this.inSubmit || this.inLoad) {
                     return;
                 }
+                this._canFill = !this.deferredFill;
                 this.inLoad = true;
                 this.hasLoadingError = false;
                 if (!this.request) {
@@ -1028,6 +1062,12 @@ attach it to the `<actindo-form>`:
             },
 
             _fillForm: function (resp) {
+                if( !this._canFill )
+                {
+                    this._respCache = resp;
+                    return;
+                }
+                this._respCache = null;
                 var recurse = function (value, pfx, lstNodes) {
                     const matchedNodes = lstNodes.filter(node => node.name === pfx);
                     if (matchedNodes.length)
