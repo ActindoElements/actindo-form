@@ -760,7 +760,7 @@ attach it to the `<actindo-form>`:
                             const submitableElements = this._getSubmittableElements();
                             const mapNameWithElement = {};
                             submitableElements.forEach(element => {
-                                mapNameWithElement[element.getAttribute('name')] = element
+                                mapNameWithElement[element.name] = element
                             });
 
                             fieldNames = [];
