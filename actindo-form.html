@@ -210,13 +210,13 @@ attach it to the `<actindo-form>`:
                         </div>
                         [[loadErrorMessage]]
                         <div class="buttonWrapper">
-                            <template is="dom-if" if="[[showCancelLoadButton]]">
+                            <template is="dom-if" if="[[!hideCancelLoadButton]]">
                                 <paper-button on-click="_cancelLoad" raised>
                                     <iron-icon icon="cancel"></iron-icon>
                                     Cancel
                                 </paper-button>
                             </template>
-                            <template is="dom-if" if="[[hideRetryButton]]">
+                            <template is="dom-if" if="[[!hideRetryButton]]">
                                 <paper-button on-click="_retryLoad" raised>
                                     <iron-icon icon="close"></iron-icon>
                                     Retry
@@ -409,7 +409,7 @@ attach it to the `<actindo-form>`:
                 /**
                  * show/hidden cancel button on the error screen
                  */
-                showCancelLoadButton: {
+                hideCancelLoadButton: {
                     type: Boolean,
                     value: false,
                 },
@@ -1176,7 +1176,8 @@ attach it to the `<actindo-form>`:
             },
 
             _cancelLoad: function () {
-                this.hasSubmitError = false;
+                this.hasLoadingError = false;
+                this.dispatchEvent( new CustomEvent( "cancel-load" ) );
             }
         });
     </script>

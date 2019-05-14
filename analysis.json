@@ -376,7 +376,7 @@
           "defaultValue": "false"
         },
         {
-          "name": "showCancelLoadButton",
+          "name": "hideCancelLoadButton",
           "type": "boolean",
           "description": "show/hidden cancel button on the error screen",
           "privacy": "public",
@@ -1041,7 +1041,7 @@
               "column": 12
             },
             "end": {
-              "line": 1179,
+              "line": 1180,
               "column": 13
             }
           },
@@ -1063,7 +1063,7 @@
           "column": 16
         },
         "end": {
-          "line": 1180,
+          "line": 1181,
           "column": 9
         }
       },
@@ -1343,7 +1343,7 @@
           "type": "boolean"
         },
         {
-          "name": "show-cancel-load-button",
+          "name": "hide-cancel-load-button",
           "description": "show/hidden cancel button on the error screen",
           "sourceRange": {
             "start": {
