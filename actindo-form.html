@@ -786,8 +786,24 @@ attach it to the `<actindo-form>`:
                                         invalid: true
                                     });
                                 }
-                            });
+                                else if (field.id === 'data')
+                                {
+                                    submitableElements.forEach(element => {
+                                        if (element.name.startsWith('data['))
+                                        {
+                                            if( fieldNames.length < 5 )
+                                            {
+                                                fieldNames.push( "\""+element.name+"\"" );
+                                            }
+                                            else if( fieldNames.length === 5 )
+                                            {
+                                                fieldNames.push( "..." );
+                                            }
+                                        }
+                                    });
+                                }
 
+                            });
 
                             this.submitErrorMessage = "Fields "+fieldNames.join(", ")+" could not be validated";
                         }
