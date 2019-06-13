@@ -868,6 +868,8 @@ attach it to the `<actindo-form>`:
                                         const name = element.name ? element.name : element.getAttribute( "name" );
                                         if( name.match( regex ) )
                                         {
+                                            element.invalid = true;
+                                            element.errorMessage = field.msg;
                                             ++foundCount;
                                             if( foundCount === 5 )
                                             {
@@ -885,10 +887,13 @@ attach it to the `<actindo-form>`:
                                                 {
                                                     label = name;
                                                 }
-                                                fieldNames.push( "\""+name+"\"" );
+                                                fieldNames.push( "\""+label+"\"" );
                                             }
                                         }
-
+                                    }
+                                    if( foundCount === 0 )
+                                    {
+                                        fieldNames.push("\""+field.id+"\"");
                                     }
                                 }
                             });
