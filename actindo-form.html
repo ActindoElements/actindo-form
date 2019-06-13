@@ -239,10 +239,18 @@ attach it to the `<actindo-form>`:
                         </div>
                         [[loadErrorMessage]]
                         <div class="buttonWrapper">
-                            <paper-button on-click="_retryLoad" raised>
-                                <iron-icon icon="close"></iron-icon>
-                                Retry
-                            </paper-button>
+                            <template is="dom-if" if="[[!hideCancelLoadButton]]">
+                                <paper-button on-click="_cancelLoad" raised>
+                                    <iron-icon icon="cancel"></iron-icon>
+                                    Cancel
+                                </paper-button>
+                            </template>
+                            <template is="dom-if" if="[[!hideRetryButton]]">
+                                <paper-button on-click="_retryLoad" raised>
+                                    <iron-icon icon="close"></iron-icon>
+                                    Retry
+                                </paper-button>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -259,7 +267,7 @@ attach it to the `<actindo-form>`:
                             <paper-button on-click="_closeSubmitError" raised>
                                 <iron-icon icon="close"></iron-icon>
                                 Close
-                        </paper-button>
+                            </paper-button>
                         </div>
                     </div>
                 </div>
@@ -434,7 +442,21 @@ attach it to the `<actindo-form>`:
                 clearValuesOnLoad: {
                     type: Boolean,
                     value: false
-                }
+                },
+                /**
+                 * show/hidden cancel button on the error screen
+                 */
+                hideCancelLoadButton: {
+                    type: Boolean,
+                    value: false,
+                },
+                /**
+                 * show/hidden retry button on the error screen
+                 */
+                hideRetryButton: {
+                    type: Boolean,
+                    value: false,
+                },
             },
             /**
              * Fired before the form is loaded.
@@ -965,7 +987,7 @@ attach it to the `<actindo-form>`:
                         else if( node.tagName === 'SLOT' ) //Traverse slot to find externally injected content
                         {
                             let assignedElements = node.assignedNodes();//cannot use assignedElements here due to older browsers
-                            
+
                             for( let j=0;j<assignedElements.length;j++ )
                             {
                                 let currentElement = assignedElements[j];
@@ -1107,7 +1129,7 @@ attach it to the `<actindo-form>`:
                     this.loadOnInit = true;
                     return;
                 }
-                
+
                 if (this.inSubmit || this.inLoad) {
                     return;
                 }
@@ -1206,7 +1228,7 @@ attach it to the `<actindo-form>`:
                 }
 
                 this.formData = resp;
-                
+
                 const lstNodes = [];
                 var nodes = this._getLoadableElements();
                 for (var i = 0, c = nodes.length; i < c; i++) {
@@ -1224,6 +1246,9 @@ attach it to the `<actindo-form>`:
                 recurse(resp, '', lstNodes);
             },
 
+            _cancelLoad: function () {
+                this.hasLoadingError = false;
+                this.dispatchEvent( new CustomEvent( "cancel-load" ) );
             _startStopSplashDots(inLoad, inSubmit)
             {
                 if (inLoad || inSubmit)
@@ -1238,7 +1263,6 @@ attach it to the `<actindo-form>`:
                 {
                     window.setTimeout( () => {window.clearInterval(this.interval);}, 500); //Give it some time to render before stop the "animation"
                 }
-
             }
         });
     </script>
