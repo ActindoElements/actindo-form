@@ -163,7 +163,6 @@ attach it to the `<actindo-form>`:
                 background-color: var(--actindo-primary);
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
             }
 
             div.wrapper
@@ -183,13 +182,26 @@ attach it to the `<actindo-form>`:
                 left:0;
                 right:0
             }
+            div.buttonWrapper span.retry
+            {
+                margin-right: 8px;
+                margin-left: 8px;
+            }
+
+            paper-button.close
+            {
+                background-color: var(--actindo-light-grey);
+                color: var(--actindo-grey);
+                justify-content: center;
+            }
+
             div.splash
             {
                 position: absolute;
-                top: 0px;
-                bottom: 0px;
-                left: 0px;
-                right: 0px;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
                 z-index: 99;
                 height: 100%;
                 display: flex;
@@ -239,16 +251,15 @@ attach it to the `<actindo-form>`:
                         </div>
                         [[loadErrorMessage]]
                         <div class="buttonWrapper">
-                            <template is="dom-if" if="[[!hideCancelLoadButton]]">
-                                <paper-button on-click="_cancelLoad" raised>
-                                    <iron-icon icon="cancel"></iron-icon>
-                                    Cancel
+                            <template is="dom-if" if="[[showCloseButtonOnLoadError]]">
+                                <paper-button on-click="_cancelLoad" class="close" raised>
+                                    Close
                                 </paper-button>
                             </template>
                             <template is="dom-if" if="[[!hideRetryButton]]">
                                 <paper-button on-click="_retryLoad" raised>
-                                    <iron-icon icon="close"></iron-icon>
-                                    Retry
+                                    <iron-icon icon="refresh"></iron-icon>
+                                    <span class="retry">Retry</span>
                                 </paper-button>
                             </template>
                         </div>
@@ -446,7 +457,7 @@ attach it to the `<actindo-form>`:
                 /**
                  * show/hidden cancel button on the error screen
                  */
-                hideCancelLoadButton: {
+                showCloseButtonOnLoadError: {
                     type: Boolean,
                     value: false,
                 },
@@ -1249,6 +1260,7 @@ attach it to the `<actindo-form>`:
             _cancelLoad: function () {
                 this.hasLoadingError = false;
                 this.dispatchEvent( new CustomEvent( "cancel-load" ) );
+            },
             _startStopSplashDots(inLoad, inSubmit)
             {
                 if (inLoad || inSubmit)
