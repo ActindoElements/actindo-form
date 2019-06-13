@@ -782,12 +782,42 @@ attach it to the `<actindo-form>`:
                                     {
                                         fieldNames.push( "..." );
                                     }
-                                    mapNameWithElement[field.id].setProperties({
-                                        invalid: true
-                                    });
+                                    mapNameWithElement[field.id].invalid = true;
+                                }
+                                else
+                                {
+                                    let foundCount = 0;
+                                    const regex = new RegExp("^"+field.id+"\\[.*");
+                                    for(let i=0;i<submitableElements.length;i++)
+                                    {
+                                        const element = submitableElements[i];
+                                        const name = element.name ? element.name : element.getAttribute( "name" );
+                                        if( name.match( regex ) )
+                                        {
+                                            ++foundCount;
+                                            if( foundCount === 5 )
+                                            {
+                                                fieldNames.push( "..." );
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                let label = element.label;
+                                                if( !label )
+                                                {
+                                                    label = element.getAttribute("label");
+                                                }
+                                                if( !label )
+                                                {
+                                                    label = name;
+                                                }
+                                                fieldNames.push( "\""+name+"\"" );
+                                            }
+                                        }
+
+                                    }
                                 }
                             });
-
 
                             this.submitErrorMessage = "Fields "+fieldNames.join(", ")+" could not be validated";
                         }
