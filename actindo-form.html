@@ -183,6 +183,28 @@ attach it to the `<actindo-form>`:
                 left:0;
                 right:0
             }
+            div.splash
+            {
+                position: absolute;
+                top: 0px;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                z-index: 99;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #FFFFFF;
+                @apply(--font-title);
+            }
+            div.splash span.dots
+            {
+                position: absolute;
+                right: -25px;
+                top: 0;
+                width: 20px;
+            }
 
         </style>
 
@@ -190,15 +212,22 @@ attach it to the `<actindo-form>`:
         <div class="slotWrapper">
             <template is="dom-if" if="[[inLoad]]">
                 <div class="overlay">
-                    <div class="spinnerContainer">
-                        <paper-spinner-lite active="[[inLoad]]"></paper-spinner-lite>
-                        <iron-icon class="circle absolute" icon="actindo-form:circle"></iron-icon>
+                    <div class="splash">
+                        <div style="position: relative">
+                            <span>[[loadingLabel]]</span>
+                            <span class="dots">[[dots]]</span>
+                        </div>
                     </div>
-                    <div>[[loadingLabel]]</div>
                 </div>
             </template>
             <template is="dom-if" if="[[inSubmit]]">
                 <div class="overlay opacque">
+                    <div class="splash">
+                        <div style="position: relative">
+                            <span>[[submittingLabel]]</span>
+                            <span class="dots">[[dots]]</span>
+                        </div>
+                    </div>
                 </div>
             </template>
             <template is="dom-if" if="[[hasLoadingError]]">
@@ -262,6 +291,14 @@ attach it to the `<actindo-form>`:
                 loadingLabel: {
                     type: String,
                     value: "Loading data"
+                },
+
+                /**
+                 * Determines label during submit
+                 */
+                submittingLabel: {
+                    type: String,
+                    value: "Submitting data"
                 },
 
                 /**
@@ -478,6 +515,10 @@ attach it to the `<actindo-form>`:
              *
              * @event actindo-form-reset
              */
+
+            observers: [
+                '_startStopSplashDots(inLoad, inSubmit)'
+            ],
 
             attached: function () {
                 this.loadOnInit = false;
@@ -804,12 +845,42 @@ attach it to the `<actindo-form>`:
                                     {
                                         fieldNames.push( "..." );
                                     }
-                                    mapNameWithElement[field.id].setProperties({
-                                        invalid: true
-                                    });
+                                    mapNameWithElement[field.id].invalid = true;
+                                }
+                                else
+                                {
+                                    let foundCount = 0;
+                                    const regex = new RegExp("^"+field.id+"\\[.*");
+                                    for(let i=0;i<submitableElements.length;i++)
+                                    {
+                                        const element = submitableElements[i];
+                                        const name = element.name ? element.name : element.getAttribute( "name" );
+                                        if( name.match( regex ) )
+                                        {
+                                            ++foundCount;
+                                            if( foundCount === 5 )
+                                            {
+                                                fieldNames.push( "..." );
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                let label = element.label;
+                                                if( !label )
+                                                {
+                                                    label = element.getAttribute("label");
+                                                }
+                                                if( !label )
+                                                {
+                                                    label = name;
+                                                }
+                                                fieldNames.push( "\""+name+"\"" );
+                                            }
+                                        }
+
+                                    }
                                 }
                             });
-
 
                             this.submitErrorMessage = "Fields "+fieldNames.join(", ")+" could not be validated";
                         }
@@ -1178,6 +1249,20 @@ attach it to the `<actindo-form>`:
             _cancelLoad: function () {
                 this.hasLoadingError = false;
                 this.dispatchEvent( new CustomEvent( "cancel-load" ) );
+            _startStopSplashDots(inLoad, inSubmit)
+            {
+                if (inLoad || inSubmit)
+                {
+                    let count = 0;
+                    this.interval  = window.setInterval( () => {
+                        ++count;
+                        this.dots = ".".repeat( count%3+1 );
+                    }, 500 );
+                }
+                else
+                {
+                    window.setTimeout( () => {window.clearInterval(this.interval);}, 500); //Give it some time to render before stop the "animation"
+                }
             }
         });
     </script>
