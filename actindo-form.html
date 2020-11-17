@@ -750,7 +750,7 @@ attach it to the `<actindo-form>`:
                 }
 
                 // Load the initial values.
-                var nodes = this._getSubmittableElements();
+                var nodes = this._getLoadableElements();
                 for (var i = 0; i < nodes.length; i++) {
                     var node = nodes[i];
                     if (this._defaults.has(node)) {
@@ -761,6 +761,24 @@ attach it to the `<actindo-form>`:
                 }
 
                 this.fire('actindo-form-reset');
+            },
+
+
+
+            clear: function ()
+            {
+                elements = this._getLoadableElements();
+                elements.forEach( (element) =>  {
+                    element.value = null;
+                    if( element.hasOwnProperty( 'invalid' ) )
+                    {
+                        element.invalid = false;
+                    }
+                    if( element.hasOwnProperty( 'errorMessage' ) )
+                    {
+                        element.errorMessage = null;
+                    }
+                } );
             },
 
             /**
@@ -1003,6 +1021,13 @@ attach it to the `<actindo-form>`:
                         else if( node.tagName === 'SLOT' ) //Traverse slot to find externally injected content
                         {
                             let assignedElements = node.assignedNodes();//cannot use assignedElements here due to older browsers
+                            for( let j=0;j<assignedElements.length;j++ )
+                            {
+                                if(assignedElements[j].tagName === 'SLOT')
+                                {
+                                    this._subSlots(assignedElements[j], assignedElements);
+                                }
+                            }
 
                             for( let j=0;j<assignedElements.length;j++ )
                             {
@@ -1050,6 +1075,23 @@ attach it to the `<actindo-form>`:
                     }
                 }
                 return submittable;
+            },
+
+            _subSlots: function(slot, assignedElements)
+            {
+                const assignedNodes = slot.assignedNodes();
+                for(let i=0;i<assignedNodes.length;++i)
+                {
+                    const node = assignedNodes[i];
+                    if(node.tagName === 'SLOT')
+                    {
+                        this._subSlots(node, assignedElements);
+                    }
+                    else
+                    {
+                        assignedElements.push(node);
+                    }
+                }
             },
 
             _serializeElementValues: function (element) {
