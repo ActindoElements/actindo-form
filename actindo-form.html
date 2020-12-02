@@ -884,7 +884,7 @@ attach it to the `<actindo-form>`:
                                     {
                                         const element = submitableElements[i];
                                         const name = element.name ? element.name : element.getAttribute( "name" );
-                                        if( name.match( regex ) )
+                                        if( name && typeof name.match === 'function' && name.match( regex ) )
                                         {
                                             element.invalid = true;
                                             element.errorMessage = field.msg;
