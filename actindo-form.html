@@ -468,6 +468,10 @@ attach it to the `<actindo-form>`:
                     type: Boolean,
                     value: false,
                 },
+                _fillOnlyNewFields: {
+                    type: Boolean,
+                    value: false,
+                }
             },
             /**
              * Fired before the form is loaded.
@@ -588,7 +592,7 @@ attach it to the `<actindo-form>`:
                 //If we have not loaded data we do not have to do anything as it will fill form automatically
                 if( oldValue === false && newValue === true && this._respCache )
                 {
-                    this._fillForm(this._respCache);
+                    this._fillForm(this._respCache, this._fillOnlyNewFields);
                 }
             },
 
@@ -633,7 +637,7 @@ attach it to the `<actindo-form>`:
                         if( !currentValid )
                         {
                             invalidNames.push( validatable.name );
-                    }
+                        }
                     }
                 }
                 if( !valid )
@@ -1050,7 +1054,7 @@ attach it to the `<actindo-form>`:
                                     if (currentElement.root) {
                                         Array.prototype.push.apply(submittable, this._findElements(currentElement.root, ignoreName, ignoreDisabled));
                                     } else {
-                                    Array.prototype.push.apply(submittable, this._findElements(currentElement, ignoreName, ignoreDisabled));
+                                        Array.prototype.push.apply(submittable, this._findElements(currentElement, ignoreName, ignoreDisabled));
                                     }
                                 }
                             }
@@ -1229,18 +1233,38 @@ attach it to the `<actindo-form>`:
                 }
             },
 
-            _fillForm: function (resp) {
+            /**
+             * call this function after adding new fields to the form, for which the data has already been loaded
+             */
+            fillAdditionalFields: function()
+            {
+                if (this.request && this.request.lastResponse)
+                {
+                    // fill only new fields (otherwise modified fields are overwritten!)
+                    this._fillForm(this.request.lastResponse, true);
+                }
+            },
+
+            _fillForm: function (resp, onlyNewFields = false) {
                 if( !this._canFill )
                 {
                     this._respCache = resp;
+                    this._fillOnlyNewFields = onlyNewFields;
                     return;
                 }
                 this._respCache = null;
-                var recurse = function (value, pfx, lstNodes) {
+                this._fillOnlyNewFields = false;
+
+                var recurse = function (value, pfx, lstNodes, onlyNewFields) {
                     const matchedNodes = lstNodes.filter(node => node.name === pfx);
                     if (matchedNodes.length)
                     {
                         matchedNodes.forEach(node => {
+                            if (onlyNewFields && node.filled)
+                            {
+                                return;
+                            }
+
                             // handle selects
                             if (node.tagName.toLowerCase() === 'select') {
                                 var values = Array.isArray(value) ? value : [value];
@@ -1258,16 +1282,17 @@ attach it to the `<actindo-form>`:
                             // default: set value on element
                             else {
                                 node.value = value;
+                                node.filled = true;
                             }
                         })
                     }
                     else if (typeof value === 'object') {
                         for (var i in value) {
                             if (!pfx.length) {
-                                recurse(value[i], i, lstNodes);
+                                recurse(value[i], i, lstNodes, onlyNewFields);
                             }
                             else {
-                                recurse(value[i], pfx + '[' + i + ']', lstNodes);
+                                recurse(value[i], pfx + '[' + i + ']', lstNodes, onlyNewFields);
                             }
                         }
                     }
@@ -1295,13 +1320,13 @@ attach it to the `<actindo-form>`:
                     if (!node.name) {
                         continue;
                     }
-                    if (this.clearValuesOnLoad)
+                    if (!onlyNewFields && this.clearValuesOnLoad)
                     {
                         node.value = null;
                     }
                     lstNodes.push(node);
                 }
-                recurse(resp, '', lstNodes);
+                recurse(resp, '', lstNodes, onlyNewFields);
             },
 
             _cancelLoad: function () {
