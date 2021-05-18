@@ -468,6 +468,10 @@ attach it to the `<actindo-form>`:
                     type: Boolean,
                     value: false,
                 },
+                aborted: {
+                    type: Boolean,
+                    value: false
+                },
             },
             /**
              * Fired before the form is loaded.
@@ -837,7 +841,13 @@ attach it to the `<actindo-form>`:
                 if (this.inLoad) {
                     isLoad = true;
                 }
-                this.inLoad = this.inSubmit = false;
+                if(!this.aborted) {
+                    this.inLoad = this.inSubmit = false;
+                }
+                else {
+                    this.aborted = false;
+                    return;
+                }
                 this.fire('actindo-form-error', event.detail);
                 if (this.showErrors) {
                     var resp = event.detail.request.response;
@@ -1189,7 +1199,8 @@ attach it to the `<actindo-form>`:
                 }
 
                 if (this.inSubmit || this.inLoad) {
-                    return;
+                    this.request.lastRequest.abort();
+                    this.aborted = true;
                 }
                 this._canFill = !this.deferredFill;
                 this.inLoad = true;
